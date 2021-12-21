@@ -57,6 +57,12 @@ setup(
     include_package_data=True,
     platforms="any",
     entry_points={
+        "console_scripts": [
+            "imoox = invenio_imoox.cli:imoox",
+        ],
+        "flask.commands": [
+            "imoox = invenio_imoox.cli:imoox",
+        ],
         "invenio_base.apps": [
             "invenio_imoox = invenio_imoox:InvenioIMooX",
         ],
