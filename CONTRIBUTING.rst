@@ -33,8 +33,8 @@ is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-Invenio IMooX could always use more documentation, whether as part of the
-official Invenio IMooX docs, in docstrings, or even on the web in blog posts,
+invenio-imoox could always use more documentation, whether as part of the
+official invenio-imoox docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 Submit Feedback

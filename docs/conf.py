@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2021 Graz University of Technology.
 #
-# Invenio IMooX is free software; you can redistribute it and/or modify
+# invenio-imoox is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more details.
 
 """Sphinx configuration."""
@@ -45,7 +45,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"Invenio IMooX"
+project = u"invenio-imoox"
 copyright = u"2021, Graz University of Technology"
 author = u"Graz University of Technology"
 
@@ -115,7 +115,7 @@ todo_include_todos = False
 html_theme = "alabaster"
 
 html_theme_options = {
-    "description": "Provides API for IMooX.",
+    "description": "Provides API for iMooX.",
     "github_user": "inveniosoftware",
     "github_repo": "invenio-imoox",
     "github_button": False,
@@ -296,10 +296,10 @@ texinfo_documents = [
     (
         master_doc,
         "invenio-imoox",
-        u"Invenio IMooX Documentation",
+        u"invenio-imoox Documentation",
         author,
         "invenio-imoox",
-        "Provides API for IMooX.",
+        "Provides API for iMooX.",
         "Miscellaneous",
     ),
 ]

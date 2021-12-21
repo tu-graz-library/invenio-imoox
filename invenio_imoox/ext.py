@@ -2,16 +2,16 @@
 #
 # Copyright (C) 2021 Graz University of Technology.
 #
-# Invenio IMooX is free software; you can redistribute it and/or modify
+# invenio-imoox is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more details.
 
-"""Provides API for IMooX."""
+"""Provides API for iMooX."""
 
 from . import config
 
 
 class InvenioIMooX(object):
-    """Invenio IMooX extension."""
+    """invenio-imoox extension."""
 
     def __init__(self, app=None):
         """Extension initialization."""

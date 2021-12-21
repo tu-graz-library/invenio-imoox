@@ -1,12 +1,12 @@
 ..
     Copyright (C) 2021 Graz University of Technology.
 
-    Invenio IMooX is free software; you can redistribute it and/or
+    invenio-imoox is free software; you can redistribute it and/or
     modify it under the terms of the MIT License; see LICENSE file for more
     details.
 
 ===============
- Invenio IMooX
+ invenio-imoox
 ===============
 
 .. image:: https://github.com/tu-graz-library/invenio-imoox/workflows/CI/badge.svg
@@ -21,7 +21,7 @@
 .. image:: https://img.shields.io/github/license/tu-graz-library/invenio-imoox.svg
         :target: https://github.com/tu-graz-library/invenio-imoox/blob/master/LICENSE
 
-Provides API for IMooX.
+Provides API for iMooX.
 
 Further documentation is available on
 https://invenio-imoox.readthedocs.io/
