@@ -30,7 +30,9 @@ for reqs in extras_require.values():
     extras_require["all"].extend(reqs)
 
 install_requires = [
+    "click",
     "invenio-records-lom",
+    "requests",
 ]
 
 packages = find_packages()
