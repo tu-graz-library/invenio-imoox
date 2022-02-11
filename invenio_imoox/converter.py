@@ -205,10 +205,13 @@ class MoocToLOM(Converter):
             )
 
     @ensure_value_list()
+    @ensure_attribute_list("record.educational.description")
     def convert_learningobjectives(self, value):
         """Convert learningobjectives attribute."""
         for desc in value:
-            self.record["educational"]["description"] = langstring(desc, self.language)
+            self.record["educational"]["description"].append(
+                langstring(desc, self.language)
+            )
 
     def convert_duration(self, value):
         """Convert duration attribute."""
