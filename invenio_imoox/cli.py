@@ -39,7 +39,14 @@ def convert(imoox_records: list) -> dict:
 def create_then_publish(lom_record: dict, identity):
     service = current_records_lom.records_service
 
-    draft = service.create(data=lom_record, identity=identity)
+    data = {
+        "access": {"record": "public", "files": "public"},
+        "files": {"enabled": False},
+        "metadata": lom_record,
+        "resource_type": "link",
+    }
+
+    draft = service.create(data=data, identity=identity)
 
     # to prevent the race condition bug.
     # see https://github.com/inveniosoftware/invenio-rdm-records/issues/809
