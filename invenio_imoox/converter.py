@@ -99,6 +99,7 @@ class MoocToLOM(Converter):
         """Reset the record structure."""
         self.record = {
             "general": {},
+            "lifeCycle": {},
             "custom": {},
             "metametadata": {},
             "technical": {},
@@ -182,22 +183,23 @@ class MoocToLOM(Converter):
 
     def convert_image(self, value):
         """Convert image attribute."""
-        self.record["custom"]["thumbnail"] = value
+        self.record["technical"]["thumbnail"] = value
 
     def convert_video(self, value):
         """Convert video attribute."""
         pass
 
     @ensure_value_list({"name": str, "description": str})
-    @ensure_attribute_list("record.metametadata.contribute")
+    @ensure_attribute_list("record.lifeCycle.contribute")
     def convert_instructors(self, value):
         """Convert instructors attribute."""
         for instructor in value:
-            self.record["metametadata"]["contribute"].append(
+            # TODO split instructors!
+            self.record["lifeCycle"]["contribute"].append(
                 {
                     "role": {
                         "source": langstring("LOMv1.0"),
-                        "value": langstring("Instructor"),
+                        "value": langstring("Author"),
                     },
                     "entity": instructor["name"],
                     "description": langstring(instructor["description"], self.language),
@@ -222,18 +224,30 @@ class MoocToLOM(Converter):
     def convert_partnerInstitute(self, value):
         """Convert partnerInstitute attribute."""
         for partner in value:
-            self.record["metametadata"]["contribute"].append(
+            self.record["lifeCycle"]["contribute"].append(
                 {
                     "role": {
                         "source": langstring("LOMv1.0"),
-                        "value": langstring("Partner"),
+                        "value": langstring("Publisher"),
                     },
                     "entity": partner["name"],
                 }
             )
 
+    @ensure_attribute_list("record.metametadata.contribute")
     def convert_moocProvider(self, value):
         """Convert moocProvider attribute."""
+        self.record["metametadata"]["contribute"].append(
+            {
+                "role": {
+                    "source": langstring("LOMv1.0"),
+                    "value": langstring("Provider"),
+                },
+                "entity": value["name"]  # ,
+                # "url": value["url"],
+                # "logo": value["logo"],
+            }
+        )
 
     def convert_url(self, value):
         """Convert url attribute."""
@@ -241,15 +255,22 @@ class MoocToLOM(Converter):
 
     def convert_workload(self, value):
         """Convert workload attribute."""
+        self.record["educational"]["typicalLearningType"] = {
+            "duration": {
+                "datetime": value,
+                "description": "workload",
+            }
+        }
 
     def convert_courseLicenses(self, value):
         """Convert courseLicenses attribute."""
         self.record["rights"] = {
             "copyrightandotherrestrictions": {
                 "source": langstring("LOMv1.0"),
-                "value": langstring("no"),
+                "value": langstring("yes"),
             },
-            "description": langstring(value, "x-t-cc-url"),
+            "url": value,
+            # "description": langstring(value, "x-t-cc-url"),
         }
 
     def convert_access(self, value):
