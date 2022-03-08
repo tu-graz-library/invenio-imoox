@@ -125,9 +125,15 @@ class MoocToLOM(Converter):
         super().convert(parent)
         return self.record
 
+    @ensure_attribute_list("record.general.identifier")
     def convert_id(self, value):
         """Convert id attribute."""
-        pass
+        self.record["general"]["identifier"].append(
+            {
+                "catalog": "imoox",
+                "entry": langstring(value),
+            }
+        )
 
     def convert_type(self, value):
         """Convert type attribute."""
@@ -269,7 +275,7 @@ class MoocToLOM(Converter):
                 "source": langstring("LOMv1.0"),
                 "value": langstring("yes"),
             },
-            "url": value,
+            "url": value[0]["url"],
             # "description": langstring(value, "x-t-cc-url"),
         }
 
