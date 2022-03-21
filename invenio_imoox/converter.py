@@ -13,7 +13,7 @@ from functools import wraps
 def langstring(value: str, language: str = "x-none") -> dict:
     return {
         "langstring": {
-            "lang:": language,
+            "lang": language,
             "#text": value,
         }
     }
@@ -261,7 +261,7 @@ class MoocToLOM(Converter):
 
     def convert_workload(self, value):
         """Convert workload attribute."""
-        self.record["educational"]["typicalLearningType"] = {
+        self.record["educational"]["typicalLearningTime"] = {
             "duration": {
                 "datetime": value,
                 "description": "workload",
