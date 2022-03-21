@@ -11,6 +11,7 @@ from functools import wraps
 
 
 def langstring(value: str, language: str = "x-none") -> dict:
+    """Langstring."""
     return {
         "langstring": {
             "lang": language,
@@ -20,29 +21,48 @@ def langstring(value: str, language: str = "x-none") -> dict:
 
 
 def ensure_value_str_not_empty(func):
+    """Decorator, only entry function if string not empty."""
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         if len(args[1]) == 0:
-            return
+            return False
         return func(*args, **kwargs)
 
     return wrapper
 
 
 def ensure_value_str(func):
+    """Decorator, to check that value is a string."""
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         if not isinstance(args[1], str):
-            return
+            return False
         return func(*args, **kwargs)
 
     return wrapper
 
 
 def ensure_value_list(list_type=None):
+    """Decorator, to check that value is a list."""
+
+    def not_all_str(values):
+        return not all(isinstance(v, str) for v in values)
+
+    def not_all_dict(values):
+        return not all(
+            isinstance(v, dict) and (key in v for key in list_type) for v in values
+        )
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
+            if isinstance(list_type, str) and not_all_str(args[1]):
+                return False
+            if isinstance(list_type, dict) and not_all_dict(args[1]):
+                return False
+
             return func(*args, **kwargs)
 
         return wrapper
@@ -51,6 +71,7 @@ def ensure_value_list(list_type=None):
 
 
 def ensure_attribute_list(query):
+    """Decorator, to ensure that the attribute list exists."""
     prop, base, sub = query.split(".")
 
     def decorator(func):
@@ -87,8 +108,8 @@ class Converter:
         return convert_func(value)
 
 
-class MoocToLOM(Converter):
-    """Convert class to convert Mooc to LOM"""
+class MoocToLOM(Converter):  # pylint: disable=too-many-public-methods
+    """Convert class to convert Mooc to LOM."""
 
     def __init__(self):
         """Constructor of MoocToLOM."""
@@ -137,7 +158,6 @@ class MoocToLOM(Converter):
 
     def convert_type(self, value):
         """Convert type attribute."""
-        pass
 
     def convert_attributes(self, value):
         """Convert attributes attribute."""
@@ -148,13 +168,11 @@ class MoocToLOM(Converter):
         """Convert name attribute."""
         self.record["general"]["title"] = langstring(value, self.language)
 
-    def convert_courseCode(self, value):
+    def convert_courseCode(self, value):  # pylint: disable=invalid-name
         """Convert courseCode attribute."""
-        pass
 
-    def convert_courseMode(self, value):
+    def convert_courseMode(self, value):  # pylint: disable=invalid-name
         """Convert courseMode attribute."""
-        pass
 
     @ensure_value_str
     @ensure_value_str_not_empty
@@ -170,22 +188,19 @@ class MoocToLOM(Converter):
         """Convert description attribute."""
         self.record["general"]["description"].append(langstring(value, self.language))
 
-    @ensure_value_list()
+    @ensure_value_list(str)
     def convert_languages(self, value):
         """Convert languages attribute."""
         self.record["general"]["language"] = value
 
-    def convert_startDate(self, value):
+    def convert_startDate(self, value):  # pylint: disable=invalid-name
         """Convert startDate attribute."""
-        pass
 
-    def convert_availableUntil(self, value):
+    def convert_availableUntil(self, value):  # pylint: disable=invalid-name
         """Convert availableUntil attribute."""
-        pass
 
-    def convert_endDate(self, value):
+    def convert_endDate(self, value):  # pylint: disable=invalid-name
         """Convert endDate attribute."""
-        pass
 
     def convert_image(self, value):
         """Convert image attribute."""
@@ -193,14 +208,12 @@ class MoocToLOM(Converter):
 
     def convert_video(self, value):
         """Convert video attribute."""
-        pass
 
     @ensure_value_list({"name": str, "description": str})
     @ensure_attribute_list("record.lifeCycle.contribute")
     def convert_instructors(self, value):
         """Convert instructors attribute."""
         for instructor in value:
-            # TODO split instructors!
             self.record["lifeCycle"]["contribute"].append(
                 {
                     "role": {
@@ -227,7 +240,7 @@ class MoocToLOM(Converter):
 
     @ensure_value_list({"name": str})
     @ensure_attribute_list("record.metametadata.contribute")
-    def convert_partnerInstitute(self, value):
+    def convert_partnerInstitute(self, value):  # pylint: disable=invalid-name
         """Convert partnerInstitute attribute."""
         for partner in value:
             self.record["lifeCycle"]["contribute"].append(
@@ -241,7 +254,7 @@ class MoocToLOM(Converter):
             )
 
     @ensure_attribute_list("record.metametadata.contribute")
-    def convert_moocProvider(self, value):
+    def convert_moocProvider(self, value):  # pylint: disable=invalid-name
         """Convert moocProvider attribute."""
         self.record["metametadata"]["contribute"].append(
             {
@@ -268,7 +281,7 @@ class MoocToLOM(Converter):
             }
         }
 
-    def convert_courseLicenses(self, value):
+    def convert_courseLicenses(self, value):  # pylint: disable=invalid-name
         """Convert courseLicenses attribute."""
         self.record["rights"] = {
             "copyrightandotherrestrictions": {
@@ -281,4 +294,3 @@ class MoocToLOM(Converter):
 
     def convert_access(self, value):
         """Convert access attribute."""
-        pass

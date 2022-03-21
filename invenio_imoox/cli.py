@@ -37,6 +37,7 @@ def convert(imoox_records: list) -> dict:
 
 
 def create_then_publish(lom_record: dict, identity):
+    """Create and publish function."""
     service = current_records_lom.records_service
 
     data = {
@@ -58,7 +59,6 @@ def create_then_publish(lom_record: dict, identity):
 @click.group()
 def imoox():
     """CLI-group for `invenio-imoox` commands."""
-    pass
 
 
 @imoox.command("import")
