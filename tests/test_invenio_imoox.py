@@ -9,13 +9,11 @@
 
 from flask import Flask
 
-from invenio_imoox import InvenioIMooX
+from invenio_imoox import InvenioIMooX, __version__
 
 
 def test_version():
     """Test version import."""
-    from invenio_imoox import __version__
-
     assert __version__
 
 
@@ -28,5 +26,6 @@ def test_init():
     app = Flask("testapp")
     ext = InvenioIMooX()
     assert "invenio-imoox" not in app.extensions
+
     ext.init_app(app)
     assert "invenio-imoox" in app.extensions

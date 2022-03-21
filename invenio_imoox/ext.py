@@ -10,7 +10,7 @@
 from . import config
 
 
-class InvenioIMooX(object):
+class InvenioIMooX:
     """invenio-imoox extension."""
 
     def __init__(self, app=None):
@@ -23,7 +23,7 @@ class InvenioIMooX(object):
         self.init_config(app)
         app.extensions["invenio-imoox"] = self
 
-    def init_config(self, app):
+    def init_config(self, app):  # pylint: disable=no-self-use
         """Initialize configuration."""
         for k in dir(config):
             if k.startswith("INVENIO_IMOOX_"):
