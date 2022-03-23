@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2020 CERN.
 # Copyright (C) 2020 Northwestern University.
-# Copyright (C) 2021 Graz University of Technology.
+# Copyright (C) 2021-2022 Graz University of Technology.
 #
 # invenio-imoox is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -11,9 +11,9 @@ name: CI
 
 on:
   push:
-    branches: master
+    branches: main
   pull_request:
-    branches: master
+    branches: main
   schedule:
     # * is a special character in YAML so you have to quote this string
     - cron:  '0 3 * * 6'
@@ -33,7 +33,7 @@ jobs:
           # a new item to the following lists.
           # You can see the complete list of services and versions that are available at:
           # https://docker-services-cli.readthedocs.io/en/latest/configuration.html
-          python-version: [3.8, 3.9]
+          python-version: [3.8, 3.9, "3.10"]
           requirements-level: [pypi]
           cache-service: [redis]
           db-service: [postgresql12]
@@ -46,7 +46,7 @@ jobs:
 
           - search-service: elasticsearch7
             SEARCH_EXTRAS: "elasticsearch7"
-    
+
     timeout-minutes: 20
     name: Test (Python ${{ matrix.python-version }}, ${{ matrix.mq-service }})
 
@@ -76,13 +76,11 @@ jobs:
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('.${{ matrix.requirements-level }}-${{ matrix.python-version }}-requirements.txt') }}
-      
+
       - name: Downgrade Setuptools
-        # the fs<2.0.0 dependency needs `use_2to3`, which is deprecated for `setuptools`>=58.0
-        # TODO: remove this step once this is fixed
         run: |
-          pip install setuptools==57.5.0
-      
+          pip install setuptools
+
       - name: Install dependencies
         run: |
           pip install -r .${{matrix.requirements-level}}-${{ matrix.python-version }}-requirements.txt
@@ -92,7 +90,5 @@ jobs:
           docker-compose --version
 
       - name: Run tests
-        # You must change the ignore command for the manifest check.
-        # Remove `.travis-*` and add `.*-requirements.txt`
         run: |
           ./run-tests.sh
