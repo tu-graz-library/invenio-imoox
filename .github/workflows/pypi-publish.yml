@@ -2,6 +2,7 @@
 #
 # Copyright (C) 2020 CERN.
 # Copyright (C) 2020 Northwestern University.
+# Copyright (C) 2022 Graz University of Technology.
 #
 # invenio-imoox is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -26,10 +27,9 @@ jobs:
           pip install setuptools wheel
       - name: Build package
         run: |
-          python setup.py compile_catalog sdist bdist_wheel
+          python setup.py sdist bdist_wheel
       - name: pypi-publish
         uses: pypa/gh-action-pypi-publish@v1.3.1
         with:
           user: __token__
-          
           password: ${{ secrets.pypi_token }}
