@@ -35,27 +35,12 @@ jobs:
           # https://docker-services-cli.readthedocs.io/en/latest/configuration.html
           python-version: [3.8, 3.9, "3.10"]
           requirements-level: [pypi]
-          cache-service: [redis]
-          db-service: [postgresql12]
-          mq-service: [rabbitmq, redis]
-          search-service: [elasticsearch7]
-
-          include:
-          - db-service: postgresql12
-            DB_EXTRAS: "postgresql"
-
-          - search-service: elasticsearch7
-            SEARCH_EXTRAS: "elasticsearch7"
 
     timeout-minutes: 20
     name: Test (Python ${{ matrix.python-version }}, ${{ matrix.mq-service }})
 
     env:
-      CACHE: ${{ matrix.cache-service }}
-      DB: ${{ matrix.db-service }}
-      MQ: ${{ matrix.mq-service }}
-      SEARCH: ${{ matrix.search-service }}
-      EXTRAS: all,${{ matrix.DB_EXTRAS }},${{ matrix.SEARCH_EXTRAS }}
+      EXTRAS: tests
 
     steps:
       - name: Checkout
