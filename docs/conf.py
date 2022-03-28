@@ -7,7 +7,7 @@
 
 """Sphinx configuration."""
 
-from invenio_records_marc21 import __version__
+from invenio_imoox import __version__
 
 # -- General configuration ------------------------------------------------
 
