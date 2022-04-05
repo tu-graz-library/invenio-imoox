@@ -289,7 +289,7 @@ class MoocToLOM(Converter):  # pylint: disable=too-many-public-methods
                 "value": langstring("yes"),
             },
             "url": value[0]["url"],
-            # "description": langstring(value, "x-t-cc-url"),
+            "description": langstring(value[0]["url"], "x-t-cc-url"),
         }
 
     def convert_access(self, value):
