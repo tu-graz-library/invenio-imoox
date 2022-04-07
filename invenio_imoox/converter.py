@@ -126,6 +126,7 @@ class MoocToLOM(Converter):  # pylint: disable=too-many-public-methods
             "technical": {},
             "rights": {},
             "educational": {},
+            "classification": [],
         }
 
     def set_language(self, parent):
@@ -294,3 +295,31 @@ class MoocToLOM(Converter):  # pylint: disable=too-many-public-methods
 
     def convert_access(self, value):
         """Convert access attribute."""
+
+    def convert_categories(self, value):
+        """Convert categories attribute."""
+        super().convert(value)
+
+    def convert_oefos(self, value):
+        """Convert oefos attribute."""
+        taxon = [
+            {
+                "id": f"https://w3id.org/oerbase/vocabs/oefos2012/{o['identifier']}",
+                "entry": [langstring(o["name"], "de")],
+            }
+            for o in value
+        ]
+        self.record["classification"].append(
+            {
+                "purpose": {
+                    "source": langstring("LOMv1.0"),
+                    "value": langstring("discipline"),
+                },
+                "taxonpath": {
+                    "source": langstring(
+                        "https://w3id.org/oerbase/vocabs/oefos2012", "x-t-oefos"
+                    ),
+                    "taxon": taxon,
+                },
+            }
+        )
