@@ -196,6 +196,7 @@ class MoocToLOM(Converter):  # pylint: disable=too-many-public-methods
 
     def convert_startDate(self, value):  # pylint: disable=invalid-name
         """Convert startDate attribute."""
+        self.record["lifeCycle"]["datetime"] = value.split("T")[0]
 
     def convert_availableUntil(self, value):  # pylint: disable=invalid-name
         """Convert availableUntil attribute."""
