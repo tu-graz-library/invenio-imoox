@@ -23,7 +23,7 @@ class InvenioIMooX:
         self.init_config(app)
         app.extensions["invenio-imoox"] = self
 
-    def init_config(self, app):  # pylint: disable=no-self-use
+    def init_config(self, app):
         """Initialize configuration."""
         for k in dir(config):
             if k.startswith("INVENIO_IMOOX_"):

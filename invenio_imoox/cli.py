@@ -21,7 +21,7 @@ from .utils import get_identity_from_user_by_email
 
 def get_records_from_imoox(endpoint: str) -> dict:
     """Get the response from imoox."""
-    response = requests.get(endpoint)
+    response = requests.get(endpoint, timeout=10)
     return json.loads(response.text.encode("utf-8"))
 
 
