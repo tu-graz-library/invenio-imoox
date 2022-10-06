@@ -7,7 +7,6 @@
 
 """Click command-line interface for `invenio-imoox` module."""
 
-import json
 import time
 
 import click
@@ -22,7 +21,8 @@ from .utils import get_identity_from_user_by_email
 def get_records_from_imoox(endpoint: str) -> dict:
     """Get the response from imoox."""
     response = requests.get(endpoint, timeout=10)
-    return json.loads(response.text.encode("utf-8"))
+    response.raise_for_status()
+    return response.json()
 
 
 def convert(imoox_records: list) -> dict:
