@@ -1,32 +1,55 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2022 Graz University of Technology.
+# Copyright (C) 2022-2023 Graz University of Technology.
 #
 # invenio-imoox is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more details.
 
-"""Common utils functions."""
+"""Utils for invenio-imoox."""
+
+from time import sleep
 
 from flask_principal import Identity
-from invenio_access import any_user, authenticated_user
-from invenio_access.utils import get_identity
-from invenio_accounts import current_accounts
+from invenio_records_lom import current_records_lom
+from invenio_records_resources.services.records.results import RecordItem
+from requests import get
+
+from .converter import MoocToLOM
 
 
-def get_identity_from_user_by_email(email: str = None) -> Identity:
-    """Get the user specified via email or ID."""
-    if email is None:
-        raise ValueError("the email has to be set to get a identity")
+def get_records_from_imoox(endpoint: str) -> dict:
+    """Get the response from imoox."""
+    response = get(endpoint, timeout=10)
+    response.raise_for_status()
+    return response.json()
 
-    user = current_accounts.datastore.get_user(email)
 
-    if user is None:
-        raise LookupError(f"user with {email} not found")
+def convert(imoox_records: list) -> list:
+    """Convert the imoox representation to lom."""
+    converter = MoocToLOM()
+    lom_records = []
 
-    identity = get_identity(user)
+    for imoox_record in imoox_records["data"]:
+        lom_records.append(converter.convert(imoox_record))
 
-    # TODO: this is a temporary solution. this should be done with data from the db
-    identity.provides.add(any_user)
-    identity.provides.add(authenticated_user)
+    return lom_records
 
-    return identity
+
+def create_then_publish(lom_record: dict, identity: Identity) -> RecordItem:
+    """Create and publish function."""
+    service = current_records_lom.records_service
+
+    data = {
+        "access": {"record": "public", "files": "public"},
+        "files": {"enabled": False},
+        "metadata": lom_record,
+        "resource_type": "link",
+    }
+
+    draft = service.create(data=data, identity=identity)
+
+    # to prevent the race condition bug.
+    # see https://github.com/inveniosoftware/invenio-rdm-records/issues/809
+    sleep(0.5)
+
+    return service.publish(id_=draft.id, identity=identity)
