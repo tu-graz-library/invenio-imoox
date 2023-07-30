@@ -12,7 +12,8 @@ from click import STRING, echo, group, option
 from flask.cli import with_appcontext
 from invenio_config_tugraz import get_identity_from_user_by_email
 
-from .utils import convert, create_then_publish, get_records_from_imoox
+from .api import import_record
+from .utils import get_records_from_imoox
 
 
 @group()
@@ -28,8 +29,7 @@ def import_from_imoox(endpoint: str, user_email: str) -> None:
     """Import metadata from endpoint into the repository."""
     identity = get_identity_from_user_by_email(email=user_email)
     imoox_records = get_records_from_imoox(endpoint)
-    lom_records = convert(imoox_records)
 
-    for lom_record in lom_records:
-        record = create_then_publish(lom_record, identity)
+    for imoox_record in imoox_records["data"]:
+        record = import_record(imoox_record, identity)
         echo(record.id)

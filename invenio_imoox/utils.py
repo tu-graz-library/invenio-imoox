@@ -11,10 +11,9 @@ from time import sleep
 
 from flask_principal import Identity
 from invenio_records_lom import current_records_lom
+from invenio_records_lom.utils import LOMMetadata
 from invenio_records_resources.services.records.results import RecordItem
 from requests import get
-
-from .converter import MoocToLOM
 
 
 def get_records_from_imoox(endpoint: str) -> dict:
@@ -24,29 +23,14 @@ def get_records_from_imoox(endpoint: str) -> dict:
     return response.json()
 
 
-def convert(imoox_records: list) -> list:
-    """Convert the imoox representation to lom."""
-    converter = MoocToLOM()
-    lom_records = []
-
-    for imoox_record in imoox_records["data"]:
-        lom_records.append(converter.convert(imoox_record))
-
-    return lom_records
-
-
-def create_then_publish(lom_record: dict, identity: Identity) -> RecordItem:
+def create_then_publish(
+    lom_metadata: LOMMetadata,
+    identity: Identity,
+) -> RecordItem:
     """Create and publish function."""
     service = current_records_lom.records_service
 
-    data = {
-        "access": {"record": "public", "files": "public"},
-        "files": {"enabled": False},
-        "metadata": lom_record,
-        "resource_type": "link",
-    }
-
-    draft = service.create(data=data, identity=identity)
+    draft = service.create(data=lom_metadata.json, identity=identity)
 
     # to prevent the race condition bug.
     # see https://github.com/inveniosoftware/invenio-rdm-records/issues/809
