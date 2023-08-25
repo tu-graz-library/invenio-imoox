@@ -31,5 +31,8 @@ def import_from_imoox(endpoint: str, user_email: str) -> None:
     imoox_records = get_records_from_imoox(endpoint)
 
     for imoox_record in imoox_records["data"]:
-        record = import_record(imoox_record, identity)
-        echo(record.id)
+        try:
+            record = import_record(imoox_record, identity)
+            echo(record.id)
+        except RuntimeError as error:
+            echo(error)
