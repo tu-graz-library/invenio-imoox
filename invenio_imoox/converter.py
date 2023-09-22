@@ -1,135 +1,51 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2022 Technische Universität Graz
+# Copyright (C) 2022-2023 Technische Universität Graz
 #
 # invenio-imoox is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
 
 """Converter Module to facilitate conversion of metadata."""
 
-from functools import wraps
 
+from html import unescape
+from typing import Any
 
-def langstring(value: str, language: str = "x-none") -> dict:
-    """Langstring."""
-    return {
-        "langstring": {
-            "lang": language,
-            "#text": value,
-        }
-    }
-
-
-def ensure_value_str_not_empty(func):
-    """Decorator, only entry function if string not empty."""
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        if len(args[1]) == 0:
-            return False
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
-def ensure_value_str(func):
-    """Decorator, to check that value is a string."""
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        if not isinstance(args[1], str):
-            return False
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
-def ensure_value_list(list_type=None):
-    """Decorator, to check that value is a list."""
-
-    def not_all_str(values):
-        return not all(isinstance(v, str) for v in values)
-
-    def not_all_dict(values):
-        return not all(
-            isinstance(v, dict) and (key in v for key in list_type) for v in values
-        )
-
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            if isinstance(list_type, str) and not_all_str(args[1]):
-                return False
-            if isinstance(list_type, dict) and not_all_dict(args[1]):
-                return False
-
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
-def ensure_attribute_list(query):
-    """Decorator, to ensure that the attribute list exists."""
-    prop, base, sub = query.split(".")
-
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            obj = getattr(args[0], prop)
-            if base not in obj:
-                obj[base] = {}
-            if sub not in obj[base]:
-                obj[base][sub] = []
-
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
+from invenio_records_lom.utils import LOMMetadata
 
 
 class Converter:
     """Converter base class."""
 
-    def convert(self, parent):
-        """Base convert method."""
+    def convert(self, parent: dict, record: LOMMetadata) -> None:
+        """Convert method."""
         for attribute, value in parent.items():
-            self.process(attribute, value)
+            self.process(attribute, value, record)
 
-    def process(self, attribute: str, value):
+    def process(
+        self,
+        attribute: str,
+        value: Any,  # noqa: ANN401
+        record: LOMMetadata,
+    ) -> None:
         """Execute the corresponding method to the attribute."""
 
-        def func_not_found(*args, **kwargs):
-            raise ValueError(f"NO convert method for {attribute}")
+        def func_not_found(*_: dict, **__: dict) -> None:
+            msg = f"NO convert method for {attribute}"
+            raise ValueError(msg)
 
         convert_func = getattr(self, f"convert_{attribute}", func_not_found)
-        return convert_func(value)
+        return convert_func(value, record)
 
 
-class MoocToLOM(Converter):  # pylint: disable=too-many-public-methods
+class MoocToLOM(Converter):
     """Convert class to convert Mooc to LOM."""
 
-    def __init__(self):
-        """Constructor of MoocToLOM."""
-        self.reset()
+    def __init__(self) -> None:
+        """Construct MoocToLOM."""
         self.language = ""
 
-    def reset(self):
-        """Reset the record structure."""
-        self.record = {
-            "general": {},
-            "lifeCycle": {},
-            "custom": {},
-            "metametadata": {},
-            "technical": {},
-            "rights": {},
-            "educational": {},
-            "classification": [],
-        }
-
-    def set_language(self, parent):
+    def set_language(self, parent: dict) -> None:
         """Set default language for langstring."""
         if "languages" not in parent["attributes"]:
             return
@@ -139,188 +55,125 @@ class MoocToLOM(Converter):  # pylint: disable=too-many-public-methods
 
         self.language = parent["attributes"]["languages"][0]
 
-    def convert(self, parent):
+    def convert(self, parent: dict, record: LOMMetadata) -> dict:
         """Convert overrides base convert method to return the record."""
-        self.reset()
         self.set_language(parent)
 
-        super().convert(parent)
-        return self.record
+        super().convert(parent, record)
 
-    @ensure_attribute_list("record.general.identifier")
-    def convert_id(self, value):
+    def convert_id(self, value: str, record: LOMMetadata) -> None:
         """Convert id attribute."""
-        self.record["general"]["identifier"].append(
-            {
-                "catalog": "imoox",
-                "entry": langstring(value),
-            }
-        )
+        record.append_identifier(value, catalog="imoox")
 
-    def convert_type(self, value):
+    def convert_type(self, value: str, record: LOMMetadata) -> None:
         """Convert type attribute."""
 
-    def convert_attributes(self, value):
+    def convert_attributes(self, value: str, record: LOMMetadata) -> None:
         """Convert attributes attribute."""
-        super().convert(value)
+        super().convert(value, record)
 
-    @ensure_value_str
-    def convert_name(self, value):
+    def convert_name(self, value: str, record: LOMMetadata) -> None:
         """Convert name attribute."""
-        self.record["general"]["title"] = langstring(value, self.language)
+        record.set_title(value, language_code=self.language)
 
-    def convert_courseCode(self, value):  # pylint: disable=invalid-name
+    def convert_courseCode(self, value: str, record: LOMMetadata) -> None:
         """Convert courseCode attribute."""
 
-    def convert_courseMode(self, value):  # pylint: disable=invalid-name
+    def convert_courseMode(self, value: str, record: LOMMetadata) -> None:
         """Convert courseMode attribute."""
 
-    @ensure_value_str
-    @ensure_value_str_not_empty
-    @ensure_attribute_list("record.general.description")
-    def convert_abstract(self, value):
+    def convert_abstract(self, value: str, record: LOMMetadata) -> None:
         """Convert abstract attribute."""
-        self.record["general"]["description"].append(langstring(value, self.language))
+        record.append_description(unescape(value), language_code=self.language)
 
-    @ensure_value_str
-    @ensure_value_str_not_empty
-    @ensure_attribute_list("record.general.description")
-    def convert_description(self, value):
+    def convert_description(self, value: str, record: LOMMetadata) -> None:
         """Convert description attribute."""
-        self.record["general"]["description"].append(langstring(value, self.language))
+        record.append_description(unescape(value), language_code=self.language)
 
-    @ensure_value_list(str)
-    def convert_languages(self, value):
+    def convert_languages(self, value: str, record: LOMMetadata) -> None:
         """Convert languages attribute."""
-        self.record["general"]["language"] = value
+        record.append_language(value)
 
-    def convert_startDate(self, value):  # pylint: disable=invalid-name
+    def convert_startDate(self, value: str, record: LOMMetadata) -> None:
         """Convert startDate attribute."""
-        self.record["lifeCycle"]["datetime"] = value.split("T")[0]
+        record.set_datetime(value.split("T")[0])
 
-    def convert_availableUntil(self, value):  # pylint: disable=invalid-name
+    def convert_availableUntil(self, value: str, record: LOMMetadata) -> None:
         """Convert availableUntil attribute."""
 
-    def convert_endDate(self, value):  # pylint: disable=invalid-name
+    def convert_endDate(self, value: str, record: LOMMetadata) -> None:
         """Convert endDate attribute."""
 
-    def convert_image(self, value):
+    def convert_image(self, value: str, record: LOMMetadata) -> None:
         """Convert image attribute."""
-        self.record["technical"]["thumbnail"] = value
+        record.set_thumbnail(value)
 
-    def convert_video(self, value):
+    def convert_video(self, value: str, record: LOMMetadata) -> None:
         """Convert video attribute."""
 
-    @ensure_value_list({"name": str, "description": str})
-    @ensure_attribute_list("record.lifeCycle.contribute")
-    def convert_instructors(self, value):
+    def convert_instructors(self, value: list, record: LOMMetadata) -> None:
         """Convert instructors attribute."""
         for instructor in value:
-            self.record["lifeCycle"]["contribute"].append(
-                {
-                    "role": {
-                        "source": langstring("LOMv1.0"),
-                        "value": langstring("Author"),
-                    },
-                    "entity": instructor["name"],
-                    "description": langstring(instructor["description"], self.language),
-                }
+            description = instructor.get("description", None)
+
+            record.append_contribute(
+                instructor["name"],
+                role="Author",
+                description=description,
             )
 
-    @ensure_value_list()
-    @ensure_attribute_list("record.educational.description")
-    def convert_learningobjectives(self, value):
+    def convert_learningobjectives(self, value: list, record: LOMMetadata) -> None:
         """Convert learningobjectives attribute."""
         for desc in value:
-            self.record["educational"]["description"].append(
-                langstring(desc, self.language)
-            )
+            record.append_educational_description(desc, self.language)
 
-    def convert_duration(self, value):
+    def convert_duration(self, value: str, record: LOMMetadata) -> None:
         """Convert duration attribute."""
-        self.record["technical"]["duration"] = {"description": langstring(value)}
+        record.set_duration(value, self.language)
 
-    @ensure_value_list({"name": str})
-    @ensure_attribute_list("record.metametadata.contribute")
-    def convert_partnerInstitute(self, value):  # pylint: disable=invalid-name
+    def convert_partnerInstitute(self, value: list, record: LOMMetadata) -> None:
         """Convert partnerInstitute attribute."""
         for partner in value:
-            self.record["lifeCycle"]["contribute"].append(
-                {
-                    "role": {
-                        "source": langstring("LOMv1.0"),
-                        "value": langstring("Publisher"),
-                    },
-                    "entity": partner["name"],
-                }
-            )
+            record.append_contribute(partner["name"], role="Publisher")
 
-    @ensure_attribute_list("record.metametadata.contribute")
-    def convert_moocProvider(self, value):  # pylint: disable=invalid-name
-        """Convert moocProvider attribute."""
-        self.record["metametadata"]["contribute"].append(
-            {
-                "role": {
-                    "source": langstring("LOMv1.0"),
-                    "value": langstring("Provider"),
-                },
-                "entity": value["name"]  # ,
-                # "url": value["url"],
-                # "logo": value["logo"],
-            }
+    def convert_moocProvider(self, value: dict, record: LOMMetadata) -> None:
+        """Convert moocProvider attribute.
+
+        value = {"name": "", "url": "", "logo": ""}
+        """
+        record.append_metametadata_contribute(
+            name=value["name"],
+            url=value["url"],
+            logo=value["logo"],
+            role="Provider",
         )
 
-    def convert_url(self, value):
+    def convert_url(self, value: str, record: LOMMetadata) -> None:
         """Convert url attribute."""
-        self.record["technical"]["location"] = {"type": "URI", "#text": value}
+        record.set_location(value)
 
-    def convert_workload(self, value):
+    def convert_workload(self, value: str, record: LOMMetadata) -> None:
         """Convert workload attribute."""
-        self.record["educational"]["typicalLearningTime"] = {
-            "duration": {
-                "datetime": value,
-                "description": "workload",
-            }
-        }
+        record.set_typical_learning_time(value, "workload")
 
-    def convert_courseLicenses(self, value):  # pylint: disable=invalid-name
+    def convert_courseLicenses(self, value: list, record: LOMMetadata) -> None:
         """Convert courseLicenses attribute."""
-        self.record["rights"] = {
-            "copyrightandotherrestrictions": {
-                "source": langstring("LOMv1.0"),
-                "value": langstring("yes"),
-            },
-            "url": value[0]["url"],
-            "description": langstring(value[0]["url"], "x-t-cc-url"),
-        }
+        record.set_rights_url(value[0]["url"])
 
-    def convert_access(self, value):
+    def convert_access(self, value: str, record: LOMMetadata) -> None:
         """Convert access attribute."""
 
-    def convert_categories(self, value):
+    def convert_categories(self, value: str, record: LOMMetadata) -> None:
         """Convert categories attribute."""
-        super().convert(value)
+        super().convert(value, record)
 
-    def convert_oefos(self, value):
+    def convert_oefos(self, value: list, record: LOMMetadata) -> None:
         """Convert oefos attribute."""
-        taxon = [
-            {
-                "id": f"https://w3id.org/oerbase/vocabs/oefos2012/{o['identifier']}",
-                "entry": [langstring(o["name"], "de")],
-            }
-            for o in value
-        ]
-        self.record["classification"].append(
-            {
-                "purpose": {
-                    "source": langstring("LOMv1.0"),
-                    "value": langstring("discipline"),
-                },
-                "taxonpath": {
-                    "source": langstring(
-                        "https://w3id.org/oerbase/vocabs/oefos2012", "x-t-oefos"
-                    ),
-                    "taxon": taxon,
-                },
-            }
-        )
+        for taxon_id in value:
+            record.append_oefos_id(taxon_id)
+
+
+def convert(imoox_record: dict, lom_metadata: LOMMetadata) -> None:
+    """Convert the imoox representation to lom."""
+    visitor = MoocToLOM()
+    visitor.convert(imoox_record, lom_metadata)
