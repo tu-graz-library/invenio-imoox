@@ -7,9 +7,7 @@
 
 """Click command-line interface for `invenio-imoox` module."""
 
-# import time
-
-import click
+from click import STRING, group, option, secho
 from flask import current_app
 from flask.cli import with_appcontext
 from invenio_access.utils import get_identity
@@ -18,17 +16,18 @@ from invenio_accounts import current_accounts
 from .services import build_service
 
 
-@click.group()
+@group()
 def imoox():
     """CLI-group for `invenio-imoox` commands."""
 
 
 @imoox.command("import")
 @with_appcontext
-@click.option("--endpoint", required=True)
-@click.option("--user-email", type=click.STRING)
+@option("--endpoint", required=True)
+@option("--user-email", type=STRING)
+@option("--dry-run", is_flag=True, default=False)
 @build_service
-def import_from_imoox(imoox_service, user_email):
+def import_from_imoox(imoox_service, user_email, dry_run):
     """Import metadata from endpoint into the repository."""
 
     user = current_accounts.datastore.get_user_by_email(user_email)
@@ -39,6 +38,6 @@ def import_from_imoox(imoox_service, user_email):
 
     for imoox_record in records:
         try:
-            import_func(imoox_record, identity)
+            import_func(imoox_record, identity, dry_run=dry_run)
         except RuntimeError as error:
-            click.secho(str(error), fg="red")
+            secho(str(error), fg="red")
