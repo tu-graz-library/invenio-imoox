@@ -13,11 +13,11 @@ from flask.cli import with_appcontext
 from invenio_access.utils import get_identity
 from invenio_accounts import current_accounts
 
-from .services import build_service
+from .services import IMOOXRESTService, build_service
 
 
 @group()
-def imoox():
+def imoox() -> None:
     """CLI-group for `invenio-imoox` commands."""
 
 
@@ -27,9 +27,13 @@ def imoox():
 @option("--user-email", type=STRING)
 @option("--dry-run", is_flag=True, default=False)
 @build_service
-def import_from_imoox(imoox_service, user_email, dry_run):
+def import_from_imoox(
+    imoox_service: IMOOXRESTService,
+    user_email: str,
+    *,
+    dry_run: bool,
+) -> None:
     """Import metadata from endpoint into the repository."""
-
     user = current_accounts.datastore.get_user_by_email(user_email)
     identity = get_identity(user)
 
