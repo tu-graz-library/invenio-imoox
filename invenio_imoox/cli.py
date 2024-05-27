@@ -7,6 +7,8 @@
 
 """Click command-line interface for `invenio-imoox` module."""
 
+import re
+
 from click import STRING, group, option, secho
 from flask import current_app
 from flask.cli import with_appcontext
@@ -14,6 +16,16 @@ from invenio_access.utils import get_identity
 from invenio_accounts import current_accounts
 
 from .services import IMOOXRESTService, build_service
+
+
+class RegexEqual(str):
+    """Regex equal to use regex in match case."""
+
+    __slots__ = ()
+
+    def __eq__(self, pattern: str) -> bool:
+        """Override == operator."""
+        return bool(re.search(pattern, self))
 
 
 @group()
@@ -44,4 +56,10 @@ def import_from_imoox(
         try:
             import_func(imoox_record, identity, dry_run=dry_run)
         except RuntimeError as error:
-            secho(str(error), fg="red")
+            match RegexEqual(str(error)):
+                case "DRY_RUN.*success":
+                    secho(str(error), fg="green")
+                case "DRY_RUN.*error":
+                    secho(str(error), fg="magenta")
+                case _:
+                    secho(str(error), fg="red")
