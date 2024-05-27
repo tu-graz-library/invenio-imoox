@@ -46,8 +46,12 @@ def import_from_imoox(
     dry_run: bool,
 ) -> None:
     """Import metadata from endpoint into the repository."""
-    user = current_accounts.datastore.get_user_by_email(user_email)
-    identity = get_identity(user)
+    try:
+        user = current_accounts.datastore.get_user_by_email(user_email)
+        identity = get_identity(user)
+    except AttributeError:
+        secho("The given user has not been found in the database", fg="red")
+        return
 
     import_func = current_app.config.get("IMOOX_REPOSITORY_IMPORT_FUNC")
     records = imoox_service.get_records()
