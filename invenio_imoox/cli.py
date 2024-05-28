@@ -12,6 +12,7 @@ import re
 from click import STRING, group, option, secho
 from flask import current_app
 from flask.cli import with_appcontext
+from invenio_access.permissions import any_user
 from invenio_access.utils import get_identity
 from invenio_accounts import current_accounts
 
@@ -49,6 +50,7 @@ def import_from_imoox(
     try:
         user = current_accounts.datastore.get_user_by_email(user_email)
         identity = get_identity(user)
+        identity.provides.add(any_user)
     except AttributeError:
         secho("The given user has not been found in the database", fg="red")
         return
