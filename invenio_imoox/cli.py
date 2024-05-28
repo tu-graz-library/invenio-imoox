@@ -60,7 +60,8 @@ def import_from_imoox(
 
     for imoox_record in records:
         try:
-            import_func(imoox_record, identity, dry_run=dry_run)
+            record = import_func(imoox_record, identity, dry_run=dry_run)
+            secho(f"successfully created record: {record.id}", fg="green")
         except RuntimeError as error:
             match RegexEqual(str(error)):
                 case "DRY_RUN.*success":
