@@ -8,6 +8,13 @@
 Changes
 =======
 
+Version v0.4.0 (release 2025-04-29)
+
+- chore: maintenance
+- setup: add python3.13 support
+- global: add jobs
+
+
 Version v0.3.0 (release 2024-05-29)
 
 - cli: improve success output
