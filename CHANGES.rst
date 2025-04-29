@@ -8,6 +8,11 @@
 Changes
 =======
 
+Version v0.4.1 (release 2025-04-29)
+
+- ci: use reusable workflows for publish
+
+
 Version v0.4.0 (release 2025-04-29)
 
 - chore: maintenance
